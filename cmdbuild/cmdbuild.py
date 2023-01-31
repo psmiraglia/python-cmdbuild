@@ -20,7 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
+import logging
+
 from restfly.session import APISession
+
+from .cards import NetworkInterface
+
+LOG = logging.getLogger(__name__)
 
 
 class CMDBuild(APISession):
@@ -57,15 +63,19 @@ class CMDBuild(APISession):
                     self._session.headers.update({
                         'cmdbuild-authorization': session_id
                     })
-                    print('(*) Logged in')
+                    LOG.debug('Logged in')
                 else:
-                    print('(!) Authentication failed')
+                    LOG.error(f'Authentication failed: {username} ({password})')  # noqa
             except Exception as e:
-                print(f'(!) Error: {e}')
+                LOG.error(e)
         else:
-            print('(!) Error: missing credentials')
+            LOG.error('Missing credentials')
 
     def _deauthenticate(self):
         if 'cmdbuild-authorization' in self._session.headers:
             self._session.headers.pop('cmdbuild-authorization')
-            print('(*) Logged out')
+            LOG.debug('Logged out')
+
+    @property
+    def network_interface(self):
+        return NetworkInterface(self)
